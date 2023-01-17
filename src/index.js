@@ -9,8 +9,9 @@ const config = {
     // Arcade physics plugin manages physics simulation
     default: 'arcade',
     arcade: {
+      debug: true,
       gravity: {
-        y: 200
+        y: 400
       }
     }
   },
@@ -26,25 +27,31 @@ function preload() {
   this.load.image('sky-background', 'assets/sky.png');
   this.load.image('bird', 'assets/bird.png');
 }
+const velocity = 200;
+const flapVelocity = 250;
 
 let bird = null;
-let totalDelta = null;
 
 function create() {
- this.add.image(0, 0, 'sky-background').setOrigin(0);
- bird = this.physics.add.sprite(config.width / 10, config.height / 2, 'bird').setOrigin(0);
+  this.add.image(0, 0, 'sky-background').setOrigin(0);
+  bird = this.physics.add.sprite(config.width / 10, config.height / 2, 'bird').setOrigin(0);
+  this.input.on('pointerdown', flap);
+  this.input.keyboard.on('keydown_SPACE', flap);
+  bird.body.velocity.x = velocity;
 }
 
 // 60fps
 function update(time, delta) {
-  totalDelta += delta;
-
-  if (totalDelta < 1000) {
-    return;
+  if(bird.x >= config.width - bird.width) {
+    bird.body.velocity.x = -velocity;
   }
-  console.log(bird.body.velocity.y);
-  totalDelta = 0;
+  if (bird.x <= 0) {
+    bird.body.velocity.x = velocity;
+  }
+}
 
+function flap() {
+  bird.body.velocity.y = -flapVelocity;
 }
 
 new Phaser.Game(config);
