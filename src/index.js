@@ -29,12 +29,13 @@ function preload() {
 }
 const velocity = 200;
 const flapVelocity = 250;
+const initialBirdPosition = { x: config.width * 0.1, y: config.height / 2 }
 
 let bird = null;
 
 function create() {
   this.add.image(0, 0, 'sky-background').setOrigin(0);
-  bird = this.physics.add.sprite(config.width / 10, config.height / 2, 'bird').setOrigin(0);
+  bird = this.physics.add.sprite(initialBirdPosition.x, initialBirdPosition.y, 'bird').setOrigin(0);
   this.input.on('pointerdown', flap);
   this.input.keyboard.on('keydown_SPACE', flap);
   bird.body.velocity.x = velocity;
@@ -48,6 +49,16 @@ function update(time, delta) {
   if (bird.x <= 0) {
     bird.body.velocity.x = velocity;
   }
+
+  if (bird.y > config.height || bird.y < 0 - bird.height) {
+    restartBirdPosition();
+  }
+}
+
+function restartBirdPosition() {
+  bird.x = initialBirdPosition.x;
+  bird.y = initialBirdPosition.y;
+  bird.body.velocity.y = 0;
 }
 
 function flap() {
