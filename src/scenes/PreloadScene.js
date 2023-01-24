@@ -10,7 +10,10 @@ class PreloadScene extends Phaser.Scene {
     // Loading assets, such as images, music, animation, etc
     preload() {
         this.load.image('sky', 'assets/sky.png');
-        this.load.image('bird', 'assets/bird.png');
+        this.load.spritesheet('bird', 'assets/birdSprite.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
         this.load.image('pipe', 'assets/pipe.png');
         this.load.image('pauseButton', 'assets/pause.png');
         this.load.image('backButton', 'assets/back.png');

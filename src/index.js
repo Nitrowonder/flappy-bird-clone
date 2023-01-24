@@ -23,11 +23,12 @@ const config = {
   // WEbGL, web graphics JS Api for rendering 2D and 3D grpahics
   type: Phaser.AUTO,
   ...SHARED_CONFIG,
+  pixelArt: true,
   physics: {
     // Arcade physics plugin manages physics simulation
     default: 'arcade',
     arcade: {
-      debug: true,
+      //debug: true,
     }
   },
   scene: initScenes(),

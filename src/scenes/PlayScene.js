@@ -2,6 +2,8 @@ import BaseScene from './BaseScene';
 
 const PIPES_TO_RENDER = 4;
 
+const MIN_UPPER_PIPE_HEIGHT = 20;
+
 class PlayScene extends BaseScene {
 
     constructor(config) {
@@ -10,11 +12,6 @@ class PlayScene extends BaseScene {
         this.bird = null;
         this.pipes = null;
         this.isPaused = false;
-
-        this.pipeHorizontalDistance = 0;
-
-        // this.pipeVerticalDistanceRange = [150, 250];
-        // this.pipeHorizontalDistanceRange = [500, 550];
 
         this.flapVelocity = 300;
 
@@ -25,15 +22,15 @@ class PlayScene extends BaseScene {
         this.difficulties = {
             'easy': {
                 pipeHorizontalDistanceRange: [300, 350],
-                pipeVerticalDistanceRange: [150, 200]
+                pipeVerticalGapRange: [150, 200]
             },
             'normal': {
                 pipeHorizontalDistanceRange: [280, 330],
-                pipeVerticalDistanceRange: [140, 190]
+                pipeVerticalGapRange: [140, 190]
             },
             'hard': {
                 pipeHorizontalDistanceRange: [250, 310],
-                pipeVerticalDistanceRange: [120, 170]
+                pipeVerticalGapRange: [120, 170]
             }
         }
 
@@ -48,9 +45,10 @@ class PlayScene extends BaseScene {
         this.createScore();
         this.createPauseButton();
 
+        this.animateBird();
         this.handleInputs();
-
         this.listenToEvents();
+
     }
 
     // 60fps
@@ -85,16 +83,43 @@ class PlayScene extends BaseScene {
         }
     }
 
+    animateBird() {
+        this.anims.create({
+            key: 'fly',
+            frames: this.anims.generateFrameNumbers('bird', {start: 8, end: 15}),
+            frameRate: 12,
+            // -1 to repeat infinitely
+            repeat: -1
+        })
+
+        this.bird.play('fly');
+    }
+
     createBackground() {
         this.add.image(0, 0, 'sky').setOrigin(0);
     }
 
     createBird() {
-        this.bird = this.physics.add.sprite(this.config.startPosition.x, this.config.startPosition.y, 'bird').setOrigin(0);
+        this.bird = this.physics.add.sprite(this.config.startPosition.x, this.config.startPosition.y, 'bird')
+        .setFlipX(true)
+        .setScale(3)
+        .setOrigin(0);
+        this.bird.setBodySize(this.bird.width, this.bird.height - 7);
         this.bird.body.gravity.y = 600;
         this.bird.setCollideWorldBounds(true);
     }
 
+    /*
+    The upper pipe origin point is the bottom left corner of the pipe (0, 1).
+    The lower pipe origin point is the top left corner of the pipe (0, 0).
+
+    In placePipes(), the 'height' is the distance from the upper boundary of the canvas
+    Ex: for an upper pipe with a height of 200px, the bottom left corner of the pipe 
+    will be 200px down from the top boundary of the canvas.
+    for a lower pipe with a height of 300px, the top left corner of the pipe
+    will be 300px down from the top boundary of the canvas, creating a 100px gap between
+    the upper and lower pipes.
+    */
     createPipes() {
         this.pipes = this.physics.add.group();
 
@@ -153,16 +178,17 @@ class PlayScene extends BaseScene {
     placePipe(uPipe, lPipe) {
         const difficulty = this.difficulties[this.currentDifficulty];
         const rightMostX = this.getRightMostPipe();
-        const pipeVerticalDistance = Phaser.Math.Between(...difficulty.pipeVerticalDistanceRange);
-        const pipeVerticalPosition = Phaser.Math.Between(0 + 20, this.config.height - 20 - pipeVerticalDistance);
-        const pipeHorizontalDistance = Phaser.Math.Between(...difficulty.pipeHorizontalDistanceRange    );
+        const pipeVerticalGap = Phaser.Math.Between(...difficulty.pipeVerticalGapRange);
+        const upperPipeHeight = Phaser.Math.Between(MIN_UPPER_PIPE_HEIGHT, this.config.height - MIN_UPPER_PIPE_HEIGHT - pipeVerticalGap);
+        const pipeHorizontalDistance = Phaser.Math.Between(...difficulty.pipeHorizontalDistanceRange);
       
         uPipe.x = rightMostX + pipeHorizontalDistance;
-        uPipe.y = pipeVerticalPosition;
+        uPipe.y = upperPipeHeight;
       
       
         lPipe.x = uPipe.x;
-        lPipe.y = uPipe.y + pipeVerticalDistance;
+        lPipe.y = uPipe.y + pipeVerticalGap;
+        //debugger;
       }
       
     recyclePipes() {
